@@ -18,20 +18,22 @@ minimumBetDefault = 10
 logFilenameDefault = 'craps.log'
 pickleFilenameDefault = ".crapsSavedObjects.pl"
 
+
 class Craps(QMainWindow):
    """A game of Craps."""
    die1 = die2 = None
+
 
 def __init__(self, parent=None):
    """Build a game with two dice."""
 
    super().__init__(parent)
 
-   self.logger = getLogger("Fireheart.craps")
+   self.logger = getLogger("Crocco.craps")
    self.appSettings = QSettings()
    self.quitCounter = 0;       # used in a workaround for a QT5 bug.
 
-   uic.loadUi("Craps.ui", self)
+   uic.loadUi("Dice.ui", self)
 
    self.payouts = [0, 0, 0,  0,  2.0,  1.5,  1.2,  0,  1.2,  1.5,  2.0,  0,  0]
    self.pickleFilename = pickleFilenameDefault
@@ -48,11 +50,13 @@ def __init__(self, parent=None):
    self.preferencesSelectButton.clicked.connect(self.preferencesSelectButtonClickedHandler)
    self.restartButton.clicked.connect(self.restartButtonClickedHandler)
 
+
 def __str__(self):
    """String representation for Dice.
    """
 
    return "Die1: %s\nDie2: %s" % (str(self.die1),  str(self.die2))
+
 
 def updateUI(self):
    if self.createLogFile:
@@ -70,6 +74,7 @@ def updateUI(self):
    self.winsLabel.setText(str("%i" % self.wins))
    self.lossesLabel.setText(str("%i" % self.losses))
    self.bankValue.setText(str("%i" % self.currentBank))
+
 
 def restartGame(self):
    if self.createLogFile:
@@ -89,6 +94,7 @@ def restartGame(self):
    self.currentBet = 0
    self.currentBank = self.startingBank
 
+
 def saveGame(self):
    if self.createLogFile:
        self.logger.debug("Saving game")
@@ -99,6 +105,7 @@ def saveGame(self):
    elif self.createLogFile:
           self.logger.critical("No pickle Filename")
 
+
 def restoreGame(self):
     if self.appSettings.contains('pickleFilename'):
         self.appSettings.value('pickleFilename', type=str)
@@ -106,6 +113,7 @@ def restoreGame(self):
             return load(pickleFile)
     else:
         self.logger.critical("No pickle Filename")
+
 
 def restoreSettings(self):
       if self.createLogFile:
@@ -146,6 +154,7 @@ def restoreSettings(self):
       else:
           self.pickleFilename = pickleFilenameDefault
           self.appSettings.setValue('pickleFilename', self.pickleFilename)
+
 
 @pyqtSlot()				# Player asked for another roll of the dice.
 def rollButtonClickedHandler ( self ):
@@ -200,6 +209,7 @@ def rollButtonClickedHandler ( self ):
       if self.createLogFile:
           self.logger.debug("Roll button clicked")
 
+
 @pyqtSlot()				# Player asked for another roll of the dice.
 def bailButtonClickedHandler ( self ):
   if self.createLogFile:
@@ -212,6 +222,7 @@ def bailButtonClickedHandler ( self ):
   self.buttonText = "Roll"
   self.updateUI()
 
+
 @pyqtSlot()  # User is requesting preferences editing dialog box.
 def preferencesSelectButtonClickedHandler(self):
   if self.createLogFile:
@@ -221,6 +232,8 @@ def preferencesSelectButtonClickedHandler(self):
   preferencesDialog.exec_()
   self.restoreSettings()              # 'Restore' settings that were changed in the dialog window.
   self.updateUI()
+
+
 @pyqtSlot()  # User is requesting the game be restarted.
 def restartButtonClickedHandler(self):
   if self.createLogFile:
@@ -228,6 +241,7 @@ def restartButtonClickedHandler(self):
   self.restartGame()
   self.saveGame()
   self.updateUI()
+
 
 @pyqtSlot()				# Player asked to quit the game.
 def closeEvent(self, event):
@@ -245,12 +259,13 @@ def closeEvent(self, event):
           event.ignore()
       return super().closeEvent(event)
 
+
 class PreferencesDialog(QDialog):
     def __init__(self, parent = Craps):
       super(PreferencesDialog, self).__init__()
 
       uic.loadUi('preferencesDialog.ui', self)
-      self.logger = getLogger("Fireheart.craps")
+      self.logger = getLogger("Crocco.craps")
 
       self.appSettings = QSettings()
       if self.appSettings.contains('startingBank'):
@@ -292,21 +307,26 @@ class PreferencesDialog(QDialog):
 
       self.updateUI()
 
+
 # @pyqtSlot()
 def startingBankValueChanged(self):
   self.startingBank = int(self.startingBankValue.text())
+
 
   # @pyqtSlot()
 def maximumBetValueChanged(self):
   self.maximumBet = int(self.maximumBetValue.text())
 
+
   # @pyqtSlot()
 def minimumBetValueChanged(self):
   self.minimumBet = int(self.minimumBetValue.text())
 
+
   # @pyqtSlot()
 def createLogFileChanged(self):
   self.createLogFile = self.createLogfileCheckBox.isChecked()
+
 
 def updateUI(self):
   self.startingBankValue.setText(str(self.startingBank))
@@ -316,6 +336,7 @@ def updateUI(self):
       self.createLogfileCheckBox.setCheckState(Qt.Checked)
   else:
       self.createLogfileCheckBox.setCheckState(Qt.Unchecked)
+
 
   # @pyqtSlot()
 def okayClickedHandler(self):
@@ -333,29 +354,31 @@ def okayClickedHandler(self):
 
   self.close()
 
+
   # @pyqtSlot()
 def cancelClickedHandler(self):
   self.close()
 
+
 if __name__ == "__main__":
-    QCoreApplication.setOrganizationName("Fireheart Software");
-    QCoreApplication.setOrganizationDomain("fireheartsoftware.com");
+    QCoreApplication.setOrganizationName("Crocco Games");
+    QCoreApplication.setOrganizationDomain("croccogames.com");
     QCoreApplication.setApplicationName("Craps");
     appSettings = QSettings()
-    if appSettings.contains('createLogFile'):
-      createLogFile = appSettings.value('createLogFile')
-    else:
-      logFilename = logFilenameDefault
-      appSettings.setValue('logFile', logFilename)
-    if createLogFile:
-      startingFolderName = path.dirname(path.realpath(__file__))
-      if appSettings.contains('logFile'):
-          logFilename = appSettings.value('logFile', type=str)
-      else:
-          logFilename = logFilenameDefault
-          appSettings.setValue('logFile', logFilename)
-      basicConfig(filename = path.join(startingFolderName, logFilename), level=INFO,
-                  format='%(asctime)s %(name)-8s %(levelname)-8s %(message)s')
+    # if appSettings.contains('createLogFile'):
+    #   createLogFile = appSettings.value('createLogFile')
+    # else:
+    #   logFilename = logFilenameDefault
+    #   appSettings.setValue('logFile', logFilename)
+    # if createLogFile:
+    #   startingFolderName = path.dirname(path.realpath(__file__))
+    #   if appSettings.contains('logFile'):
+    #       logFilename = appSettings.value('logFile', type=str)
+    #   else:
+    #       logFilename = logFilenameDefault
+    #       appSettings.setValue('logFile', logFilename)
+    #   basicConfig(filename = path.join(startingFolderName, logFilename), level=INFO,
+    #               format='%(asctime)s %(name)-8s %(levelname)-8s %(message)s')
     app = QApplication(sys.argv)
     diceApp = Craps()
     diceApp.show()
