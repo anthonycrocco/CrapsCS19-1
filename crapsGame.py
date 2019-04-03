@@ -361,3 +361,4 @@ if __name__ == "__main__":
     diceApp.show()
     diceApp.updateUI()
     sys.exit(app.exec())
+
