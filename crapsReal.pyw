@@ -6,6 +6,10 @@ import diceResources_rc
 from PyQt5.QtCore import pyqtSlot
 from PyQt5 import QtGui, uic
 from PyQt5.QtWidgets import QMainWindow, QWidget, QApplication
+from logging import basicConfig, getLogger, DEBUG, INFO, CRITICAL
+from pickle import dump, load
+
+logFilenameDefault = 'craps.log'
 
 
 class Craps(QMainWindow):
@@ -17,7 +21,19 @@ class Craps(QMainWindow):
 
         super().__init__(parent)
 
+        self.logger = getLogger("Crocco.craps")
+        self.appSettings = Qsettings()
 
+        try:
+            with open('picklefile.pl', 'rb') as pickleFile:
+                self.restoreSettings(pickleFile)
+        except FileNotFoundError:
+                self.restartGame()
+
+    def restoreSettings(self, filehandele):
+        self.die1, self.die2, self.currentBet, self.rollValue, self.beginningBank, self.currentBank, self.firstRoll, self.firstRollValue, self.numberOfWins, self.numberOfLosses, self.payouts, self.message
+
+    def restartGame(self):
         self.die1 = Die()
         self.die2 = Die()
         self.currentBet = 0
@@ -33,10 +49,23 @@ class Craps(QMainWindow):
         uic.loadUi("Dice.ui", self)
         self.rollButton.clicked.connect(self.rollButtonClickedHandler)
 
-
+    def saveGame(self):
+        saveItems = (self.die1, self.die2, self.currentBet, self.beginningBank, self.currentBank, self.firstRoll, self.firstRollValue, self.numberOfWins, self.numberOfLosses)
+        # with open()
     def __str__(self):
-        return "FirstRoll: {0} RollValue: {1} Bank: {2} Wins: {3} Losses:{4}".format(self.firstRoll, self.rollValue, self.currentBank, self.numberOfWins, self.numberOfLosses)
+        return "FirstRoll: {0} RollValue: {1} Bank: {2} Wins: {3} Losses:{4}".format(self.firstRoll, self.rollValue,
+                                                                                     self.currentBank,
+                                                                                     self.numberOfWins,
+                                                                                     self.numberOfLosses)
 
+    @pyqtSlot()
+    def closeEvent(self, event):
+        if self.quitCounter ==0:
+            self.quitCounter +=1
+            quitMessage = "Are you sure you want to quit?"
+            reply = QMessageBox.question(self, 'Message', quitMessage, QMessageBox.Yes, QMessageBox.No)
+
+            # if reply
     def getRollValue(self):
         return self.rollValue
 
@@ -48,8 +77,6 @@ class Craps(QMainWindow):
 
     def playRoll(self):
         pass
-
-
 
     def settleWin(self):
         self.numberOfWins += 1
@@ -114,6 +141,12 @@ class Craps(QMainWindow):
 
 
 if __name__ == "__main__":
+    if appSettings.contains('logFile'):
+        logFilename = appSettings.value('logFile', type=str)
+    else:
+        logFilename =logFilenameDefault
+        appSettings.setValue('logFile', logFilename)
+    basicConfig(filename = path.join(startingFolderName, logFilename), level=INFO, format='%(asctime)s %(name)-8s %(message)s')
     app = QApplication(sys.argv)
     crapsApp = Craps()
     crapsApp.updateUI()
